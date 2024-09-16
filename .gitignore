@@ -398,4 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Build
-.build/
+.build/*
