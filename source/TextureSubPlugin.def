@@ -8,3 +8,4 @@ EXPORTS
    UnityPluginUnload
    GetRenderEventFunc
    SetTextureSubImage2DParams
+   SetTextureSubImage3DParams
