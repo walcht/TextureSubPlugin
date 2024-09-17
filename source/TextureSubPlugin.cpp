@@ -64,27 +64,23 @@ struct TextureSubImage2DParams {
   int32_t type;
   int32_t row_pitch;
 };
-static TextureSubImage2DParams* g_TextureSubImage2DParams = nullptr;
+static TextureSubImage2DParams g_TextureSubImage2DParams;
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
 SetTextureSubImage2DParams(void* texture_handle, int32_t xoffset,
                            int32_t yoffset, int32_t width, int32_t height,
                            void* data_ptr, int32_t level, int32_t format,
                            int32_t type, int32_t row_pitch) {
-  if (nullptr != g_TextureSubImage2DParams) {
-    delete g_TextureSubImage2DParams;
-  }
-  g_TextureSubImage2DParams = new TextureSubImage2DParams;
-  g_TextureSubImage2DParams->texture_handle = texture_handle;
-  g_TextureSubImage2DParams->xoffset = xoffset;
-  g_TextureSubImage2DParams->yoffset = yoffset;
-  g_TextureSubImage2DParams->width = width;
-  g_TextureSubImage2DParams->height = height;
-  g_TextureSubImage2DParams->data_ptr = data_ptr;
-  g_TextureSubImage2DParams->level = level;
-  g_TextureSubImage2DParams->format = format;
-  g_TextureSubImage2DParams->type = type;
-  g_TextureSubImage2DParams->row_pitch = row_pitch;
+  g_TextureSubImage2DParams.texture_handle = texture_handle;
+  g_TextureSubImage2DParams.xoffset = xoffset;
+  g_TextureSubImage2DParams.yoffset = yoffset;
+  g_TextureSubImage2DParams.width = width;
+  g_TextureSubImage2DParams.height = height;
+  g_TextureSubImage2DParams.data_ptr = data_ptr;
+  g_TextureSubImage2DParams.level = level;
+  g_TextureSubImage2DParams.format = format;
+  g_TextureSubImage2DParams.type = type;
+  g_TextureSubImage2DParams.row_pitch = row_pitch;
 }
 
 struct TextureSubImage3DParams {
@@ -102,7 +98,7 @@ struct TextureSubImage3DParams {
   int32_t row_pitch;
   int32_t depth_pitch;
 };
-static TextureSubImage3DParams* g_TextureSubImage3DParams = nullptr;
+static TextureSubImage3DParams g_TextureSubImage3DParams;
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
 SetTextureSubImage3DParams(void* texture_handle, int32_t xoffset,
@@ -110,23 +106,19 @@ SetTextureSubImage3DParams(void* texture_handle, int32_t xoffset,
                            int32_t height, int32_t depth, void* data_ptr,
                            int32_t level, int32_t format, int32_t type,
                            int32_t row_pitch, int32_t depth_pitch) {
-  if (nullptr != g_TextureSubImage3DParams) {
-    delete g_TextureSubImage3DParams;
-  }
-  g_TextureSubImage3DParams = new TextureSubImage3DParams;
-  g_TextureSubImage3DParams->texture_handle = texture_handle;
-  g_TextureSubImage3DParams->xoffset = xoffset;
-  g_TextureSubImage3DParams->yoffset = yoffset;
-  g_TextureSubImage3DParams->zoffset = zoffset;
-  g_TextureSubImage3DParams->width = width;
-  g_TextureSubImage3DParams->height = height;
-  g_TextureSubImage3DParams->depth = depth;
-  g_TextureSubImage3DParams->data_ptr = data_ptr;
-  g_TextureSubImage3DParams->level = level;
-  g_TextureSubImage3DParams->format = format;
-  g_TextureSubImage3DParams->type = type;
-  g_TextureSubImage3DParams->row_pitch = row_pitch;
-  g_TextureSubImage3DParams->depth_pitch = depth_pitch;
+  g_TextureSubImage3DParams.texture_handle = texture_handle;
+  g_TextureSubImage3DParams.xoffset = xoffset;
+  g_TextureSubImage3DParams.yoffset = yoffset;
+  g_TextureSubImage3DParams.zoffset = zoffset;
+  g_TextureSubImage3DParams.width = width;
+  g_TextureSubImage3DParams.height = height;
+  g_TextureSubImage3DParams.depth = depth;
+  g_TextureSubImage3DParams.data_ptr = data_ptr;
+  g_TextureSubImage3DParams.level = level;
+  g_TextureSubImage3DParams.format = format;
+  g_TextureSubImage3DParams.type = type;
+  g_TextureSubImage3DParams.row_pitch = row_pitch;
+  g_TextureSubImage3DParams.depth_pitch = depth_pitch;
 }
 
 enum Event {
@@ -140,31 +132,25 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID) {
 
   switch ((Event)eventID) {
     case Event::TextureSubImage2D: {
-      if (nullptr == g_TextureSubImage2DParams) return;
       s_CurrentAPI->TextureSubImage2D(
-          g_TextureSubImage2DParams->texture_handle,
-          g_TextureSubImage2DParams->xoffset,
-          g_TextureSubImage2DParams->yoffset, g_TextureSubImage2DParams->width,
-          g_TextureSubImage2DParams->height,
-          g_TextureSubImage2DParams->data_ptr, g_TextureSubImage2DParams->level,
-          g_TextureSubImage2DParams->format, g_TextureSubImage2DParams->type,
-          g_TextureSubImage2DParams->row_pitch);
-      delete g_TextureSubImage2DParams;
+          g_TextureSubImage2DParams.texture_handle,
+          g_TextureSubImage2DParams.xoffset, g_TextureSubImage2DParams.yoffset,
+          g_TextureSubImage2DParams.width, g_TextureSubImage2DParams.height,
+          g_TextureSubImage2DParams.data_ptr, g_TextureSubImage2DParams.level,
+          g_TextureSubImage2DParams.format, g_TextureSubImage2DParams.type,
+          g_TextureSubImage2DParams.row_pitch);
       break;
     }
     case Event::TextureSubImage3D: {
-      if (nullptr == g_TextureSubImage3DParams) return;
       s_CurrentAPI->TextureSubImage3D(
-          g_TextureSubImage3DParams->texture_handle,
-          g_TextureSubImage3DParams->xoffset,
-          g_TextureSubImage3DParams->yoffset,
-          g_TextureSubImage3DParams->zoffset, g_TextureSubImage3DParams->width,
-          g_TextureSubImage3DParams->height, g_TextureSubImage3DParams->depth,
-          g_TextureSubImage3DParams->data_ptr, g_TextureSubImage3DParams->level,
-          g_TextureSubImage3DParams->format, g_TextureSubImage3DParams->type,
-          g_TextureSubImage3DParams->row_pitch,
-          g_TextureSubImage3DParams->depth_pitch);
-      delete g_TextureSubImage3DParams;
+          g_TextureSubImage3DParams.texture_handle,
+          g_TextureSubImage3DParams.xoffset, g_TextureSubImage3DParams.yoffset,
+          g_TextureSubImage3DParams.zoffset, g_TextureSubImage3DParams.width,
+          g_TextureSubImage3DParams.height, g_TextureSubImage3DParams.depth,
+          g_TextureSubImage3DParams.data_ptr, g_TextureSubImage3DParams.level,
+          g_TextureSubImage3DParams.format, g_TextureSubImage3DParams.type,
+          g_TextureSubImage3DParams.row_pitch,
+          g_TextureSubImage3DParams.depth_pitch);
       break;
     }
     default:
