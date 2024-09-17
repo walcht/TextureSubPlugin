@@ -1,3 +1,9 @@
+// Unity Native Plugin API copyright © 2015 Unity Technologies ApS
+//
+// Licensed under the Unity Companion License for Unity - dependent projects--see[Unity Companion License](http://www.unity3d.com/legal/licenses/Unity_Companion_License).
+//
+// Unless expressly provided otherwise, the Software under this license is made available strictly on an “AS IS” BASIS WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.Please review the license for details on these and other terms and conditions.
+
 #pragma once
 #include "IUnityInterface.h"
 
@@ -271,29 +277,24 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
     // Most rules/restrictions for implementing a Vulkan layer apply
     // Returns true on success, false on failure (typically because it is used too late)
     bool(UNITY_INTERFACE_API * InterceptInitialization)(UnityVulkanInitCallback func, void* userdata);
-
     // Intercept Vulkan API function of the given name with the given function
     // In contrast to InterceptInitialization this interface can be used at any time
     // The user must handle all synchronization
     // Generally this cannot be used to wrap Vulkan object because there might because there may already be non-wrapped instances
     // returns the previous function pointer
     PFN_vkVoidFunction(UNITY_INTERFACE_API * InterceptVulkanAPI)(const char* name, PFN_vkVoidFunction func);
-
     // Change the precondition for a specific user-defined event
     // Should be called during initialization
     void(UNITY_INTERFACE_API * ConfigureEvent)(int eventID, const UnityVulkanPluginEventConfig * pluginEventConfig);
-
     // Access the Vulkan instance and render queue created by Unity
     // UnityVulkanInstance does not change between kUnityGfxDeviceEventInitialize and kUnityGfxDeviceEventShutdown
     UnityVulkanInstance(UNITY_INTERFACE_API * Instance)();
-
     // Access the current command buffer
     //
     // outCommandRecordingState is invalidated by any resource access calls.
     // queueAccess must be kUnityVulkanGraphicsQueueAccess_Allow when called from from a AccessQueue callback or from a event that is configured for queue access.
     // Otherwise queueAccess must be kUnityVulkanGraphicsQueueAccess_DontCare.
     bool(UNITY_INTERFACE_API * CommandRecordingState)(UnityVulkanRecordingState * outCommandRecordingState, UnityVulkanGraphicsQueueAccess queueAccess);
-
     // Resource access
     //
     // Using the following resource query APIs will mark the resources as used for the current frame.
@@ -304,15 +305,11 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
     // or from a AccessQueue callback of an event
     bool(UNITY_INTERFACE_API * AccessTexture)(void* nativeTexture, const VkImageSubresource * subResource, VkImageLayout layout,
         VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
-
     bool(UNITY_INTERFACE_API * AccessRenderBufferTexture)(UnityRenderBuffer nativeRenderBuffer, const VkImageSubresource * subResource, VkImageLayout layout,
         VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
-
     bool(UNITY_INTERFACE_API * AccessRenderBufferResolveTexture)(UnityRenderBuffer nativeRenderBuffer, const VkImageSubresource * subResource, VkImageLayout layout,
         VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
-
     bool(UNITY_INTERFACE_API * AccessBuffer)(void* nativeBuffer, VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanBuffer * outBuffer);
-
     // Control current state of render pass
     //
     // Must not be called from event callbacks configured for queue access (UnityVulkanGraphicsQueueAccess_Allow, UnityVulkanGraphicsQueueAccess_FlushAndAllow)
@@ -320,7 +317,6 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
     // See kUnityVulkanRenderPass_EnsureInside, kUnityVulkanRenderPass_EnsureOutside
     void(UNITY_INTERFACE_API * EnsureOutsideRenderPass)();
     void(UNITY_INTERFACE_API * EnsureInsideRenderPass)();
-
     // Allow command buffer submission to the the Vulkan graphics queue from the given UnityRenderingEventAndData callback.
     // This is an alternative to using ConfigureEvent with kUnityVulkanGraphicsQueueAccess_Allow.
     //
@@ -328,9 +324,12 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
     // This may or may not be called synchronously or from the submission thread.
     // If flush is true then all Unity command buffers of this frame are submitted before UnityQueueAccessCallback
     void(UNITY_INTERFACE_API * AccessQueue)(UnityRenderingEventAndData, int eventId, void* userData, bool flush);
-
     // Configure swapchains that are created by Unity.
     // Must be called before kUnityGfxDeviceEventInitialize (preload plugin)
     bool(UNITY_INTERFACE_API * ConfigureSwapchain)(const UnityVulkanSwapchainConfiguration * swapChainConfig);
+    // see AccessTexture
+    // Accepts UnityTextureID (UnityRenderingExtTextureUpdateParamsV2::textureID, UnityRenderingExtCustomBlitParams::source)
+    bool(UNITY_INTERFACE_API * AccessTextureByID)(UnityTextureID textureID, const VkImageSubresource * subResource, VkImageLayout layout,
+        VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
 };
 UNITY_REGISTER_INTERFACE_GUID(0x95355348d4ef4e11ULL, 0x9789313dfcffcc87ULL, IUnityGraphicsVulkan)

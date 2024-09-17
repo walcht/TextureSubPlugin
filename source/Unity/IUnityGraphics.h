@@ -14,7 +14,7 @@ typedef enum UnityGfxRenderer
     //kUnityGfxRendererD3D9              =  1, // Direct3D 9, removed
     kUnityGfxRendererD3D11             =  2, // Direct3D 11
     kUnityGfxRendererNull              =  4, // "null" device (used in batch mode)
-    //kUnityGfxRendererOpenGLES20        =  8, // OpenGL ES 2.0, removed
+    kUnityGfxRendererOpenGLES20        =  8, // OpenGL ES 2.0
     kUnityGfxRendererOpenGLES30        = 11, // OpenGL ES 3.0
     //kUnityGfxRendererGXM               = 12, // PlayStation Vita, removed
     kUnityGfxRendererPS4               = 13, // PlayStation 4
