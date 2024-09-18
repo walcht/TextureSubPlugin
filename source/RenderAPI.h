@@ -7,77 +7,61 @@
 
 struct IUnityInterfaces;
 
+enum Format { R8 = 0, RHalf = 1 };
+
 class RenderAPI {
  public:
   virtual ~RenderAPI() {}
 
-  /// <summary>
-  ///	Loads provided data (i.e., sub-region of texture 2D) into a
-  /// 	provided texture2D's GPU memory.
-  /// </summary>
-  ///
-  /// <remarks>
-  ///	For OpenGL this is simply a call to glTextureSubImage2D.
-  /// </remarks>
-  ///
-  /// <param name="texture_handle">
-  ///
-  /// </param>
-  ///
-  /// <param name="xoffset"></param>
-  /// <param name="yoffset"></param>
-  /// <param name="width"></param>
-  /// <param name="height"></param>
-  ///
-  /// <param name="data_ptr"></param>
-  ///
-  /// <param name="level">
-  ///	Will be provided to glTextureSubImage2D's level parameter.
-  ///	Only used in case graphics API is OpenGL.
-  /// </param>
-  ///
-  /// <param name="format">
-  ///	Will be provided to glTextureSubImage2D's format parameter.
-  ///	Only used in case graphics API is OpenGL.
-  /// </param>
-  ///
-  /// <param name="type">
-  ///	Will be provided to glTextureSubImage2D's type parameter.
-  ///	Only used in case graphics API is OpenGL.
-  ///</param>
-  ///
-  /// <param name="row_pitch">
-  ///	The size in bytes of one row of the source data. Will be
-  ///	provided, as is, to UpdateSubresource's SrcRowPitch parameter.
-  /// 	Only used in case graphics API is Direct3D11.
-  /// </param>
+  /// @brief Loads provided data (i.e., sub-region of texture 2D) into a
+  /// provided texture2D's GPU memory. For OpenGL this is simply a call to
+  /// glTextureSubImage2D.
+  /// @param texture_handle pointer to the texture handle
+  /// @param xoffset x offset within the target 3D texture
+  /// @param yoffset y offset within the target 3D texture
+  /// @param width width of the source data
+  /// @param height height of the source data
+  /// @param data_ptr pointer to the data array in memory
+  /// @param level will be provided to glTextureSubImage2D's level parameter.
+  /// Only used in case graphics API is OpenGL.
+  /// @param format will be provided to glTextureSubImage2D's format parameter.
+  /// Only used in case graphics API is OpenGL.
   virtual void TextureSubImage2D(void* texture_handle, int32_t xoffset,
                                  int32_t yoffset, int32_t width, int32_t height,
-                                 void* data_ptr, int32_t level = 0,
-                                 int32_t format = -1, int32_t type = -1,
-                                 int32_t row_pitch = -1) = 0;
+                                 void* data_ptr, int32_t level,
+                                 Format format) = 0;
 
+  /// @brief Loads provided data (i.e., sub-region of texture 2D) into a
+  /// provided texture3D's GPU memory. For OpenGL this is simply a call to
+  /// glTextureSubImage3D.
+  /// @param texture_handle pointer to the texture handle
+  /// @param xoffset x offset within the target 3D texture
+  /// @param yoffset y offset within the target 3D texture
+  /// @param zoffset z offset within the target 3D texture
+  /// @param width width of the source data
+  /// @param height height of the source data
+  /// @param depth depth of the source data
+  /// @param data_ptr pointer to the data array in memory
+  /// @param level will be provided to glTextureSubImage2D's level parameter.
+  /// Only used in case graphics API is OpenGL.
+  /// @param format will be provided to glTextureSubImage2D's format parameter.
+  /// Only used in case graphics API is OpenGL.
   virtual void TextureSubImage3D(void* texture_handle, int32_t xoffset,
                                  int32_t yoffset, int32_t zoffset,
                                  int32_t width, int32_t height, int32_t depth,
-                                 void* data_ptr, int32_t level = 0,
-                                 int32_t format = -1, int32_t type = -1,
-                                 int32_t row_pitch = -1,
-                                 int32_t depth_pitch = -1) = 0;
+                                 void* data_ptr, int32_t level,
+                                 Format format) = 0;
 
-  /// <summary>
-  ///	Callback to process general events like initialization,	shutdown,
-  ///	device loss/reset etc.
-  /// </summary>
-  ///
-  /// <param name="type">
-  /// </param>
-  ///
-  /// <param name="interfaces">
-  /// </param>
+  /// @brief to process general events like initialization,	shutdown, device
+  /// loss/reset etc.
+  /// @param type
+  /// @param interfaces
   virtual void ProcessDeviceEvent(UnityGfxDeviceEventType type,
                                   IUnityInterfaces* interfaces) = 0;
 };
 
-// Create a graphics API implementation instance for the given API type.
+/// @brief Create a graphics API implementation instance for the given API type.
+/// @param apiType Graphics API type. Currently only: kUnityGfxRendererD3D11 and
+/// kUnityGfxRendererOpenGLCore are supported
+/// @return to the created render API
 RenderAPI* CreateRenderAPI(UnityGfxRenderer apiType);
