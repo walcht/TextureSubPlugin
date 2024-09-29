@@ -93,8 +93,20 @@ Texture3D tex = Texture3D.CreateExternalTexture(m_tex_width, m_tex_height, m_tex
     tex_format, mipChain: false, nativeTex: m_tex_ptr);
 ```
 
+If you have used ```CreateTexture3D``` to create a native texture then you
+should also call ```ClearTexture3D``` to clean it up. Not doing so will result
+in a GPU memory leak (e.g., your GPU memory usage will increase each time
+you toggle the play mode in Unity editor):
+
+```csharp
+private void OnDestroy() {
+    UpdateClearTexture3DParams(m_tex_ptr);
+    GL.IssuePluginEvent(GetRenderEventFunc(), (int)TextureSubPlugin.Event.ClearTexture3D);
+}
+```
+
 Again, if the graphics API is Direct3D11/12, there is (probably) no good reason
-to use this.
+to use ```CreateTexture3D```.
 
 ## License
 
