@@ -4,14 +4,24 @@
 #include <stdint.h>
 
 #include "Unity/IUnityGraphics.h"
+#include "Unity/IUnityLog.h"
 
 struct IUnityInterfaces;
 
-enum Format { R8 = 0, RHalf = 1 };
+enum Format { R8_UINT = 0, R16_UINT = 1 };
+
+extern IUnityInterfaces* g_UnityInterfaces;
+extern IUnityGraphics* g_Graphics;
+extern IUnityLog* g_Log;
 
 class RenderAPI {
  public:
   virtual ~RenderAPI() {}
+
+  virtual void CreateTexture3D(uint32_t width, uint32_t height, uint32_t depth,
+                               Format format, void*& texture) = 0;
+
+  virtual void ClearTexture3D(void* texture_handle) = 0;
 
   /// @brief Loads provided data (i.e., sub-region of texture 2D) into a
   /// provided texture2D's GPU memory. For OpenGL this is simply a call to

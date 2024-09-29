@@ -9,3 +9,6 @@ EXPORTS
    GetRenderEventFunc
    UpdateTextureSubImage2DParams
    UpdateTextureSubImage3DParams
+   UpdateCreateTexture3DParams
+   UpdateClearTexture3DParams
+   RetrieveCreatedTexture3D

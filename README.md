@@ -55,13 +55,46 @@ This repository is adapted from [Unity native rendering plugin repository](https
         bricksize, gc_data.AddrOfPinnedObject(), level: 0,
         format: (int)TextureSubPlugin.Format.R8);
     
-    // actual texture loading should be called from the render thread
+    // actual texture loading SHOULD be called from the render thread otherwise
+    // we might change the current render state. This is still true even after
+    // frame rendering has finished
     GL.IssuePluginEvent(GetRenderEventFunc(),
         (int)TextureSubPlugin.Event.TextureSubImage3D);
     
     // GC, you are now again free to manage the object
     gc_data.Free();
     ```
+
+For textures larger than 2GBs and when using OpenGL or Vulkan, using Unity's
+Texture3D/2D constructor outputs the following error:
+
+```Texture3D (WIDTHxHEIGHTxDEPTH) is too large, currently up to 2GB is allowed```
+
+Direct3D11/12 impose a 2GB limit per resource but OpenGL and Vulkan don't.
+To bypass this, create the texture using the provided ```CreateTexture3D```
+(see RenderAPI.h):
+
+```csharp
+// update global state
+UpdateCreateTexture3DParams(m_tex_width, m_tex_height, m_tex_depth,
+m_tex_plugin_format);  // see RenderAPI.h
+
+// issue texture creation command in the render thread
+GL.IssuePluginEvent(GetRenderEventFunc(), (int)TextureSubPlugin.Event.CreateTexture3D);
+
+// wait one frame because IssuePluginEvent's callback may not get called immediately
+yield return new WaitForEndOfFrame();
+
+// retrieve the native texture handle
+IntPtr tex_ptr = RetrieveCreatedTexture3D();
+
+// finally, create the Texture3D object from the created native texture
+Texture3D tex = Texture3D.CreateExternalTexture(m_tex_width, m_tex_height, m_tex_depth,
+    tex_format, mipChain: false, nativeTex: m_tex_ptr);
+```
+
+Again, if the graphics API is Direct3D11/12, there is (probably) no good reason
+to use this.
 
 ## License
 

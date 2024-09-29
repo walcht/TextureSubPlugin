@@ -1,31 +1,32 @@
 #include <assert.h>
 #include <math.h>
 
-#include <vector>
-
 #include "PlatformBase.h"
 #include "RenderAPI.h"
 
-enum Event { TextureSubImage2D = 0, TextureSubImage3D = 1 };
+enum Event {
+  TextureSubImage2D = 0,
+  TextureSubImage3D = 1,
+  CreateTexture3D = 2,
+  ClearTexture3D = 3
+};
 
 static void UNITY_INTERFACE_API
 OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType);
 
-static IUnityInterfaces* s_UnityInterfaces = NULL;
-static IUnityGraphics* s_Graphics = NULL;
-
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
 UnityPluginLoad(IUnityInterfaces* unityInterfaces) {
-  s_UnityInterfaces = unityInterfaces;
-  s_Graphics = s_UnityInterfaces->Get<IUnityGraphics>();
-  s_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
+  g_UnityInterfaces = unityInterfaces;
+  g_Graphics = g_UnityInterfaces->Get<IUnityGraphics>();
+  g_Graphics->RegisterDeviceEventCallback(OnGraphicsDeviceEvent);
+  g_Log = g_UnityInterfaces->Get<IUnityLog>();
 
   // Run OnGraphicsDeviceEvent(initialize) manually on plugin load
   OnGraphicsDeviceEvent(kUnityGfxDeviceEventInitialize);
 }
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginUnload() {
-  s_Graphics->UnregisterDeviceEventCallback(OnGraphicsDeviceEvent);
+  g_Graphics->UnregisterDeviceEventCallback(OnGraphicsDeviceEvent);
 }
 
 // GraphicsDeviceEvent
@@ -37,13 +38,13 @@ OnGraphicsDeviceEvent(UnityGfxDeviceEventType eventType) {
   // Create graphics API implementation upon initialization
   if (eventType == kUnityGfxDeviceEventInitialize) {
     assert(s_CurrentAPI == NULL);
-    s_DeviceType = s_Graphics->GetRenderer();
+    s_DeviceType = g_Graphics->GetRenderer();
     s_CurrentAPI = CreateRenderAPI(s_DeviceType);
   }
 
   // Let the implementation process the device related events
   if (s_CurrentAPI) {
-    s_CurrentAPI->ProcessDeviceEvent(eventType, s_UnityInterfaces);
+    s_CurrentAPI->ProcessDeviceEvent(eventType, g_UnityInterfaces);
   }
 
   // Cleanup graphics API implementation upon shutdown
@@ -78,9 +79,23 @@ struct TextureSubImage3DParams {
   Format format;
 };
 
+struct CreateTexture3DParams {
+  uint32_t width;
+  uint32_t height;
+  uint32_t depth;
+  Format format;
+};
+
+struct ClearTexture3DParams {
+  void* texture_handle;
+};
+
 // global state parameters
 static TextureSubImage2DParams g_TextureSubImage2DParams;
 static TextureSubImage3DParams g_TextureSubImage3DParams;
+static CreateTexture3DParams g_CreateTexture3DParams;
+static ClearTexture3DParams g_ClearTexture3DParams;
+static void* g_Texture3D = NULL;
 
 extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
 UpdateTextureSubImage2DParams(void* texture_handle, int32_t xoffset,
@@ -113,6 +128,20 @@ UpdateTextureSubImage3DParams(void* texture_handle, int32_t xoffset,
   g_TextureSubImage3DParams.format = format;
 }
 
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+UpdateCreateTexture3DParams(uint32_t width, uint32_t height, uint32_t depth,
+                            Format format) {
+  g_CreateTexture3DParams.width = width;
+  g_CreateTexture3DParams.height = height;
+  g_CreateTexture3DParams.depth = depth;
+  g_CreateTexture3DParams.format = format;
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+UpdateClearTexture3DParams(void* texture_handle) {
+  g_ClearTexture3DParams.texture_handle = texture_handle;
+}
+
 static void UNITY_INTERFACE_API OnRenderEvent(int eventID) {
   // Unknown / unsupported graphics device type? Do nothing
   if (s_CurrentAPI == NULL) return;
@@ -137,6 +166,17 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID) {
           g_TextureSubImage3DParams.format);
       break;
     }
+    case Event::CreateTexture3D: {
+      s_CurrentAPI->CreateTexture3D(
+          g_CreateTexture3DParams.width, g_CreateTexture3DParams.height,
+          g_CreateTexture3DParams.depth, g_CreateTexture3DParams.format,
+          g_Texture3D);
+      break;
+    }
+    case Event::ClearTexture3D: {
+      s_CurrentAPI->ClearTexture3D(g_ClearTexture3DParams.texture_handle);
+      break;
+    }
     default:
       break;
   }
@@ -145,4 +185,9 @@ static void UNITY_INTERFACE_API OnRenderEvent(int eventID) {
 extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
 GetRenderEventFunc() {
   return OnRenderEvent;
+}
+
+extern "C" UNITY_INTERFACE_EXPORT void* UNITY_INTERFACE_API
+RetrieveCreatedTexture3D() {
+  return g_Texture3D;
 }

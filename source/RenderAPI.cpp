@@ -3,6 +3,10 @@
 #include "PlatformBase.h"
 #include "Unity/IUnityGraphics.h"
 
+IUnityInterfaces* g_UnityInterfaces = NULL;
+IUnityGraphics* g_Graphics = NULL;
+IUnityLog* g_Log = NULL;
+
 RenderAPI* CreateRenderAPI(UnityGfxRenderer apiType) {
 #if SUPPORT_D3D11
   if (apiType == kUnityGfxRendererD3D11) {
